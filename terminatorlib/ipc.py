@@ -189,7 +189,7 @@ class DBusService(Borg, dbus.service.Object):
                     if action == 'get':
                         return root_widget.get_tab_label(tab_child).get_label()
                     elif action == 'set':
-                        root_widget.set_tab_label_text(tab_child, label)
+                        root_widget.get_tab_label(tab_child).set_label(label)
 
     @dbus.service.method(BUS_NAME)
     def get_tab_title(self, uuid=None):
