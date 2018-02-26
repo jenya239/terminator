@@ -137,6 +137,13 @@ class DBusService(Borg, dbus.service.Object):
         return [x.uuid.urn for x in self.terminator.terminals]
 
     @dbus.service.method(BUS_NAME)
+    def feed(self, uuid=None, cmdstr=None):
+        """execute command in terminal"""
+        terminal = self.terminator.find_terminal_by_uuid(uuid)
+        terminal.feed( str(cmdstr)+'\n' )
+        return uuid
+
+    @dbus.service.method(BUS_NAME)
     def get_window(self, uuid=None):
         """Return the UUID of the parent window of a given terminal"""
         terminal = self.terminator.find_terminal_by_uuid(uuid)
@@ -246,4 +253,9 @@ def get_tab(session, uuid, options):
 def get_tab_title(session, uuid, options):
     """Call the dbus method to return the title of a tab"""
     print session.get_tab_title(uuid)
+
+@with_proxy
+def feed(session, uuid, options): #is this correct args?
+    """execute command in terminal"""
+    session.feed(uuid, options)
 
