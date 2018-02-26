@@ -175,9 +175,7 @@ class DBusService(Borg, dbus.service.Object):
                     # This would fail: return root_widget.uuid.urn
                     return ""
 
-    @dbus.service.method(BUS_NAME)
-    def get_tab_title(self, uuid=None):
-        """Return the title of a parent tab of a given terminal"""
+    def tab_title_action(self, uuid, action, label):
         maker = Factory()
         terminal = self.terminator.find_terminal_by_uuid(uuid)
         window = terminal.get_toplevel()
@@ -188,7 +186,20 @@ class DBusService(Borg, dbus.service.Object):
                 if not maker.isinstance(terms[0], "Terminal"):
                     terms = enumerate_descendants(tab_child)[1]
                 if terminal in terms:
-                    return root_widget.get_tab_label(tab_child).get_label()
+                    if action == 'get':
+                        return root_widget.get_tab_label(tab_child).get_label()
+                    elif action == 'set':
+                        root_widget.set_tab_label_text(tab_child, label)
+
+    @dbus.service.method(BUS_NAME)
+    def get_tab_title(self, uuid=None):
+        """Return the title of a parent tab of a given terminal"""
+        self.tab_title_action( uuid, 'get', '' )
+
+    @dbus.service.method(BUS_NAME)
+    def set_tab_title(self, uuid=None, label=None):
+        """set the title of a parent tab of a given terminal"""
+        self.tab_title_action( uuid, 'set', label )
 
 def with_proxy(func):
     """Decorator function to connect to the session dbus bus"""
@@ -258,4 +269,9 @@ def get_tab_title(session, uuid, options):
 def feed(session, uuid, options): #is this correct args?
     """execute command in terminal"""
     session.feed(uuid, options)
+
+@with_proxy
+def set_tab_title(session, uuid, options):
+    """Call the dbus method to return the title of a tab"""
+    print session.set_tab_title(uuid, options)
 
